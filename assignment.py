@@ -5,7 +5,7 @@ from PIL import Image,ImageTk
 class Cell():
     
 
-    def __init__(self, master, x, y, size,type):
+    def __init__(self, master, x, y, size):
         """ Constructor of the object called by Cell(...) """
         self.master = master
         self.abs = x
@@ -13,6 +13,7 @@ class Cell():
         self.size= size
         self.fill= False
         self.type = "Empty"
+        self.rotation = 0
         self.robotImg = ImageTk.PhotoImage(Image.open("robot-1.jpg").resize((size-2,size-2)))
         self.triangleImg = ImageTk.PhotoImage(Image.open("triangle.jpg").resize((size-2,size-2)))
         self.boxImg = ImageTk.PhotoImage(Image.open("box.jpg").resize((size-2,size-2)))
@@ -39,10 +40,12 @@ class Cell():
             if self.type in ["Obstacle","Empty"]:
                 self.master.create_rectangle(xmin, ymin, xmax, ymax, fill = fill, outline = outline)
             if self.type == "Box":
+                self.boxImg = ImageTk.PhotoImage(Image.open("box.jpg").rotate(self.rotation).resize((self.size-2,self.size-2)))
                 self.master.create_image((xmin+xmax)/2,(ymin+ymax)/2, image=self.boxImg)
             if self.type == "Robot":
                 self.master.create_image((xmin+xmax)/2,(ymin+ymax)/2, image=self.robotImg)
             if self.type == "Triangle":
+                self.triangleImg = ImageTk.PhotoImage(Image.open("triangle.jpg").rotate(self.rotation).resize((self.size-2,self.size-2)))
                 self.master.create_image((xmin+xmax)/2,(ymin+ymax)/2, image=self.triangleImg)
 
 
@@ -55,7 +58,7 @@ class CellGrid(Canvas):
         self.grid = []
         self.robotRow = -1
         self.robotCol = -1
-        
+        self.currentRotation = 0
 
         b1 = Button(master, text="Obstacle", fg="grey",command=(lambda: self.changeType("Obstacle")))
         b1.pack(side=RIGHT)
@@ -65,12 +68,19 @@ class CellGrid(Canvas):
         b3.pack(side=RIGHT)
         b4 = Button(master, text="Robot", fg="blue",command=(lambda: self.changeType("Robot")))
         b4.pack(side=RIGHT)
+        b5 = Button(master, text="0°", fg="black",command=(lambda: self.changeRotation(0)))
+        b5.pack(side=RIGHT)
+        b6 = Button(master, text="90°", fg="black",command=(lambda: self.changeRotation(-90)))
+        b6.pack(side=RIGHT)
+        b7 = Button(master, text="180°", fg="black",command=(lambda: self.changeRotation(-180)))
+        b7.pack(side=RIGHT)
+        b8 = Button(master, text="270°", fg="black",command=(lambda: self.changeRotation(90)))
+        b8.pack(side=RIGHT)
 
         for row in range(rowNumber):
-
             line = []
             for column in range(columnNumber):
-                line.append(Cell(self, column, row, cellSize,self.currentType))
+                line.append(Cell(self, column, row, cellSize))
 
             self.grid.append(line)
         self.robotCell= self.grid[0][0]
@@ -100,11 +110,16 @@ class CellGrid(Canvas):
                 self.robotCol = cell.abs 
             cell.type = "Robot"
             
+            
+            
         else:
             if(cell.type == type):
                 cell.type = "Empty"
+                cell.rotation = 0
             else:
               cell.type = type
+              cell.rotation = self.currentRotation
+        
 
     def draw(self):
         for row in self.grid:
@@ -140,7 +155,9 @@ class CellGrid(Canvas):
     
     def changeType(self,type):
         self.currentType = type
-        
+    
+    def changeRotation(self,rotation):
+        self.currentRotation = rotation
 
     
 
@@ -150,12 +167,6 @@ if __name__ == "__main__" :
     grid = CellGrid(app, 10, 15, 50)
     grid.pack(side=LEFT)
 
-
-          
-    #canvas = Canvas(app, width = 280, height = 500)      
-    #canvas.pack(side=RIGHT)      
-    #img = PhotoImage(file="robot-1.png")      
-    #canvas.create_image(0,0, anchor=NW, image=img)
 
     
     app.mainloop()
