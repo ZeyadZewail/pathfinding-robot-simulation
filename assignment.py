@@ -17,7 +17,8 @@ class Cell():
         self.robotImg = ImageTk.PhotoImage(Image.open("robot-1.jpg").resize((size-2,size-2)))
         self.triangleImg = ImageTk.PhotoImage(Image.open("triangle.jpg").resize((size-2,size-2)))
         self.boxImg = ImageTk.PhotoImage(Image.open("box.jpg").resize((size-2,size-2)))
-
+        self.boxTargetImg = ImageTk.PhotoImage(Image.open("box_target.jpg").resize((size-2,size-2)))
+        self.triangleTargetImg = ImageTk.PhotoImage(Image.open("triangle_target.jpg").resize((size-2,size-2)))
     
 
     def draw(self):
@@ -42,11 +43,17 @@ class Cell():
             if self.type == "Box":
                 self.boxImg = ImageTk.PhotoImage(Image.open("box.jpg").rotate(self.rotation).resize((self.size-2,self.size-2)))
                 self.master.create_image((xmin+xmax)/2,(ymin+ymax)/2, image=self.boxImg)
+            if self.type == "BoxTarget":
+                self.boxImg = ImageTk.PhotoImage(Image.open("box_target.jpg").rotate(self.rotation).resize((self.size-2,self.size-2)))
+                self.master.create_image((xmin+xmax)/2,(ymin+ymax)/2, image=self.boxImg)
             if self.type == "Robot":
                 self.master.create_image((xmin+xmax)/2,(ymin+ymax)/2, image=self.robotImg)
             if self.type == "Triangle":
                 self.triangleImg = ImageTk.PhotoImage(Image.open("triangle.jpg").rotate(self.rotation).resize((self.size-2,self.size-2)))
                 self.master.create_image((xmin+xmax)/2,(ymin+ymax)/2, image=self.triangleImg)
+            if self.type == "TriangleTarget":
+                self.triangleTargetImg = ImageTk.PhotoImage(Image.open("triangle_target.jpg").rotate(self.rotation).resize((self.size-2,self.size-2)))
+                self.master.create_image((xmin+xmax)/2,(ymin+ymax)/2, image=self.triangleTargetImg)
 
 
 class CellGrid(Canvas):
@@ -59,23 +66,30 @@ class CellGrid(Canvas):
         self.robotRow = -1
         self.robotCol = -1
         self.currentRotation = 0
-
-        b1 = Button(master, text="Obstacle", fg="grey",command=(lambda: self.changeType("Obstacle")))
-        b1.pack(side=RIGHT)
-        b2 = Button(master, text="Box", fg="yellow",command=(lambda: self.changeType("Box")))
-        b2.pack(side=RIGHT)
-        b3 = Button(master, text="Triangle", fg="green",command=(lambda: self.changeType("Triangle")))
-        b3.pack(side=RIGHT)
-        b4 = Button(master, text="Robot", fg="blue",command=(lambda: self.changeType("Robot")))
-        b4.pack(side=RIGHT)
-        b5 = Button(master, text="0°", fg="black",command=(lambda: self.changeRotation(0)))
-        b5.pack(side=RIGHT)
-        b6 = Button(master, text="90°", fg="black",command=(lambda: self.changeRotation(-90)))
-        b6.pack(side=RIGHT)
-        b7 = Button(master, text="180°", fg="black",command=(lambda: self.changeRotation(-180)))
-        b7.pack(side=RIGHT)
-        b8 = Button(master, text="270°", fg="black",command=(lambda: self.changeRotation(90)))
-        b8.pack(side=RIGHT)
+        p1 = PanedWindow()
+        p1.pack(side = RIGHT)
+        b4 = Button(p1, text="Robot", fg="blue",command=(lambda: self.changeType("Robot")))
+        b4.pack(side=TOP,fill=BOTH)
+        b1 = Button(p1, text="Obstacle", fg="blue",command=(lambda: self.changeType("Obstacle")))
+        b1.pack(side=TOP,fill=BOTH)
+        b2 = Button(p1, text="Box", fg="blue",command=(lambda: self.changeType("Box")))
+        b2.pack(side=TOP,fill=BOTH)
+        b9 = Button(p1, text="BoxTarget", fg="blue",command=(lambda: self.changeType("BoxTarget")))
+        b9.pack(side=TOP,fill=BOTH)
+        b3 = Button(p1, text="Triangle", fg="blue",command=(lambda: self.changeType("Triangle")))
+        b3.pack(side=TOP,fill=BOTH)
+        b10 = Button(p1, text="TriangleTarget", fg="blue",command=(lambda: self.changeType("TriangleTarget")))
+        b10.pack(side=TOP,fill=BOTH)
+        b5 = Button(p1, text="0°", fg="black",command=(lambda: self.changeRotation(0)))
+        b5.pack(side=TOP,fill=BOTH)
+        b6 = Button(p1, text="90°", fg="black",command=(lambda: self.changeRotation(-90)))
+        b6.pack(side=TOP,fill=BOTH)
+        b7 = Button(p1, text="180°", fg="black",command=(lambda: self.changeRotation(-180)))
+        b7.pack(side=TOP,fill=BOTH)
+        b8 = Button(p1, text="270°", fg="black",command=(lambda: self.changeRotation(90)))
+        b8.pack(side=TOP,fill=BOTH)
+        b11 = Button(p1, text="Start", fg="red",command=())
+        b11.pack(side=TOP,fill=BOTH)
 
         for row in range(rowNumber):
             line = []
