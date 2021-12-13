@@ -1,6 +1,6 @@
 from tkinter import *
 from PIL import Image,ImageTk
-import threading
+import time
 
 #heavily edited source code for basic grid representation
 #https://stackoverflow.com/questions/30023763/how-to-make-an-interactive-2d-grid-in-a-window-in-python
@@ -26,7 +26,7 @@ class Cell():
         self.boxImg = ImageTk.PhotoImage(Image.open("box.jpg").resize((size-2,size-2)))
         self.boxTargetImg = ImageTk.PhotoImage(Image.open("box_target.jpg").resize((size-2,size-2)))
         self.triangleTargetImg = ImageTk.PhotoImage(Image.open("triangle_target.jpg").resize((size-2,size-2)))
-
+        self.BoxDeliveredImg = ImageTk.PhotoImage(Image.open("box-delivered.jpg").resize((size-2,size-2)))
 
     def draw(self):
         """ order to the cell to draw its representation on the canvas """
@@ -65,6 +65,9 @@ class Cell():
             if self.type == "TriangleTarget":
                 self.triangleTargetImg = ImageTk.PhotoImage(Image.open("triangle_target.jpg").rotate(self.rotation).resize((self.size-2,self.size-2)))
                 self.master.create_image((xmin+xmax)/2,(ymin+ymax)/2, image=self.triangleTargetImg)
+            if self.type == "BoxDelivered":
+                self.BoxDeliveredImg = ImageTk.PhotoImage(Image.open("box-delivered.jpg").rotate(self.rotation).resize((self.size-2,self.size-2)))
+                self.master.create_image((xmin+xmax)/2,(ymin+ymax)/2, image=self.BoxDeliveredImg)
 
 
 class CellGrid(Canvas):
@@ -222,8 +225,14 @@ class CellGrid(Canvas):
 
     def dropitem(self,target):
         robot = self.grid[self.robotRow][self.robotCol]
+        dropType = None
+        if(robot.carrying == "Box"):
+            dropType = "BoxDelivered"
+        if(robot.carrying == "Triangle"):
+            dropType = "TriangleDelivered"
+    
         if(robot.carrying != None):
-            target.type = robot.carrying
+            target.type = dropType
             print("Dropped "+ robot.carrying)
             robot.carrying = None
             target.draw()
@@ -298,6 +307,8 @@ class CellGrid(Canvas):
 
         #DFS
         def DFS(target):
+            self.clear()
+
             if(type(target) == type(self.grid[0][0])):
                 visited = []
                 queue =[]
@@ -330,14 +341,18 @@ class CellGrid(Canvas):
                     print("Reached "+ target.type +" Succesfully.")       
 
                 self.pointImg = ImageTk.PhotoImage(Image.open("point.jpg").rotate(180).resize((next.size-2,next.size-2)))
-                visited.pop(0) 
+                visited.pop(0)
+                counter = 1 
                 for i in visited:
                     xmin = i.abs * i.size
                     xmax = xmin + i.size
                     ymin = i.ord * i.size
                     ymax = ymin + i.size
                     
-                    self.create_image((xmin+xmax)/2,(ymin+ymax)/2, image=self.pointImg)
+                    #self.create_image((xmin+xmax)/2,(ymin+ymax)/2, image=self.pointImg)
+                    self.create_text((xmin+xmax)/2,(ymin+ymax)/2,fill="black",font="Times 20 bold",text=counter)
+                    counter+=1
+                    
 
                 return path    
             elif(type(target) == type("str")):
@@ -379,14 +394,17 @@ class CellGrid(Canvas):
                     print("Reached a "+ target +" Succesfully.")       
 
                 self.pointImg = ImageTk.PhotoImage(Image.open("point.jpg").rotate(180).resize((next.size-2,next.size-2)))
-                visited.pop(0) 
+                visited.pop(0)
+                counter = 1 
                 for i in visited:
                     xmin = i.abs * i.size
                     xmax = xmin + i.size
                     ymin = i.ord * i.size
                     ymax = ymin + i.size
                     
-                    self.create_image((xmin+xmax)/2,(ymin+ymax)/2, image=self.pointImg)
+                    #self.create_image((xmin+xmax)/2,(ymin+ymax)/2, image=self.pointImg)
+                    self.create_text((xmin+xmax)/2,(ymin+ymax)/2,fill="black",font="Times 20 bold",text=counter)
+                    counter+=1
                 return path
 
         if(len(boxTargets)>0):
