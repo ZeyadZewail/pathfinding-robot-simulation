@@ -1,6 +1,8 @@
 from tkinter import *
 from PIL import Image,ImageTk
 
+#heavily edited source code for basic grid representation
+#https://stackoverflow.com/questions/30023763/how-to-make-an-interactive-2d-grid-in-a-window-in-python
 
 class Cell():
     
@@ -13,13 +15,15 @@ class Cell():
         self.size= size
         self.fill= False
         self.type = "Empty"
+        self.carrying = None
+        self.NextTo = []
         self.rotation = 0
         self.robotImg = ImageTk.PhotoImage(Image.open("robot-1.jpg").resize((size-2,size-2)))
         self.triangleImg = ImageTk.PhotoImage(Image.open("triangle.jpg").resize((size-2,size-2)))
         self.boxImg = ImageTk.PhotoImage(Image.open("box.jpg").resize((size-2,size-2)))
         self.boxTargetImg = ImageTk.PhotoImage(Image.open("box_target.jpg").resize((size-2,size-2)))
         self.triangleTargetImg = ImageTk.PhotoImage(Image.open("triangle_target.jpg").resize((size-2,size-2)))
-    
+
 
     def draw(self):
         """ order to the cell to draw its representation on the canvas """
@@ -48,6 +52,7 @@ class Cell():
                 self.master.create_image((xmin+xmax)/2,(ymin+ymax)/2, image=self.boxImg)
             if self.type == "Robot":
                 self.master.create_image((xmin+xmax)/2,(ymin+ymax)/2, image=self.robotImg)
+
             if self.type == "Triangle":
                 self.triangleImg = ImageTk.PhotoImage(Image.open("triangle.jpg").rotate(self.rotation).resize((self.size-2,self.size-2)))
                 self.master.create_image((xmin+xmax)/2,(ymin+ymax)/2, image=self.triangleImg)
@@ -88,7 +93,7 @@ class CellGrid(Canvas):
         b7.pack(side=TOP,fill=BOTH)
         b8 = Button(p1, text="270°", fg="black",command=(lambda: self.changeRotation(90)))
         b8.pack(side=TOP,fill=BOTH)
-        b11 = Button(p1, text="Start", fg="red",command=())
+        b11 = Button(p1, text="Start DFS", fg="red",command=(lambda: self.startDFS()))
         b11.pack(side=TOP,fill=BOTH)
 
         for row in range(rowNumber):
@@ -173,7 +178,66 @@ class CellGrid(Canvas):
     def changeRotation(self,rotation):
         self.currentRotation = rotation
 
-    
+    def startDFS(self):
+        boxes = []
+        triangles = []
+        boxTargets = []
+        triangleTargets = []
+        robot = None
+
+        for i in self.grid:
+            for j in i:
+                if(j.type == "Box"):
+                    boxes.append(j)
+                if(j.type == "BoxTarget"):
+                    boxTargets.append(j)
+                if(j.type == "Triangle"):
+                    triangles.append(j)
+                if(j.type == "TriangleTarget"):
+                    triangleTargets.append(j)
+                if(j.type == "Robot"):
+                    robot = j
+
+        if(robot != None):
+            print("Robot at ("+str(robot.abs)+","+str(robot.ord)+")")
+        else:
+            print("Robot not found")
+
+        if(len(boxes)>0):
+            for i in boxes:
+                print("Box at ("+str(i.abs)+","+str(i.ord)+") Orientation: "+str(i.rotation)+"°")
+        else:
+            print("No boxes found.")
+
+        if(len(boxTargets)>0):
+            for i in boxTargets:
+                print("BoxTarget at ("+str(i.abs)+","+str(i.ord)+") Orientation: "+str(i.rotation)+"°")
+        else:
+            print("No box Targets found.")
+
+        if(len(triangles)>0):
+            for i in triangles:
+                print("triangle at ("+str(i.abs)+","+str(i.ord)+") Orientation: "+str(i.rotation)+"°")
+        else:
+            print("No triangles found.")
+        
+        if(len(triangleTargets)>0):
+            for i in triangleTargets:
+                print("triangle Target at ("+str(i.abs)+","+str(i.ord)+") Orientation: "+str(i.rotation)+"°")
+        else:
+            print("No triangle Target found.")
+
+        #DFS
+        def DFS(target):
+            visted = []
+            queue =[]
+            #if(target.obs >  robot.obs):
+            #backtrack when stuck    
+            #queue.append([robot.abs,robot.ord])
+            #path = []
+            #while(queue):
+
+
 
 if __name__ == "__main__" :
     app = Tk()
