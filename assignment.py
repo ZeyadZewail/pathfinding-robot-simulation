@@ -91,7 +91,7 @@ class CellGrid(Canvas):
         b6.pack(side=TOP,fill=BOTH)
         b7 = Button(p1, text="180°", fg="black",command=(lambda: self.changeRotation(-180)))
         b7.pack(side=TOP,fill=BOTH)
-        b8 = Button(p1, text="270°", fg="black",command=(lambda: self.changeRotation(90)))
+        b8 = Button(p1, text="270°", fg="black",command=(lambda: self.changeRotation(-270)))
         b8.pack(side=TOP,fill=BOTH)
         b11 = Button(p1, text="Start DFS", fg="red",command=(lambda: self.startDFS()))
         b11.pack(side=TOP,fill=BOTH)
@@ -116,7 +116,7 @@ class CellGrid(Canvas):
         self.draw()
 
     def _switch(self,cell,type):
-        """ Switch if the cell is filled or not. """
+        """ Switch the cell type. """
 
         if(type == "Robot"):
             if(self.robotRow == -1):
@@ -139,6 +139,26 @@ class CellGrid(Canvas):
               cell.type = type
               cell.rotation = self.currentRotation
         
+    def find_neighbours(self,cell):
+        nextTo = []
+        #right
+        if(cell.abs != len(self.grid[0])-1):
+            if(self.grid[cell.ord][cell.abs+1]):
+                nextTo.append(self.grid[cell.ord][cell.abs+1])
+        #up
+        if(cell.ord != 0):
+            if(self.grid[cell.ord-1][cell.abs]):
+                nextTo.append(self.grid[cell.ord-1][cell.abs])
+        #left
+        if(cell.abs != 0):
+            if(self.grid[cell.ord][cell.abs-1]):
+              nextTo.append(self.grid[cell.ord][cell.abs-1])
+        #down
+        if(cell.ord != len(self.grid)-1):
+            if(self.grid[cell.ord+1][cell.abs]):
+                nextTo.append(self.grid[cell.ord+1][cell.abs])
+
+        return nextTo
 
     def draw(self):
         for row in self.grid:
@@ -227,15 +247,51 @@ class CellGrid(Canvas):
         else:
             print("No triangle Target found.")
 
+        #self.grid[y][x] -> [ord][abs]
+        for i in self.find_neighbours(robot):
+            print(i.type)
+
         #DFS
         def DFS(target):
-            visted = []
+            visited = []
             queue =[]
-            #if(target.obs >  robot.obs):
-            #backtrack when stuck    
-            #queue.append([robot.abs,robot.ord])
-            #path = []
-            #while(queue):
+            next = robot
+            visited.append(robot)
+            fail = False
+            #backtrack when stuck
+            while(target not in self.find_neighbours(next) and fail == False):
+                    temp = next
+                    nodes = self.find_neighbours(next)
+                    while(len(nodes)>0):
+                        i = nodes.pop(0)
+                        if(i.type == "Empty" and i not in visited):
+                            queue.append(i)
+                            visited.append(i)
+                            next = i
+                            break
+                    if(next != robot):
+                        if(temp == next):
+                            next = visited[visited.index(temp)-1]
+                    else:
+                        fail = True
+                        break  
+            if(fail):
+                print("Failed to reach Object")
+            if(target in self.find_neighbours(next) and fail == False):
+                print("Reached "+ target.type +" Succesfully.")       
+
+            self.pointImg = ImageTk.PhotoImage(Image.open("point.jpg").rotate(180).resize((next.size-2,next.size-2)))
+            visited.pop(0) 
+            for i in visited:
+                xmin = i.abs * i.size
+                xmax = xmin + i.size
+                ymin = i.ord * i.size
+                ymax = ymin + i.size
+                
+                self.create_image((xmin+xmax)/2,(ymin+ymax)/2, image=self.pointImg)
+                
+        DFS(self.grid[0][5])
+            
 
 
 
