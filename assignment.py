@@ -213,6 +213,8 @@ class CellGrid(Canvas):
         robot = self.grid[self.robotRow][self.robotCol]
         found = False
         for i in self.find_neighbours(robot):
+            if(found):
+                break
             if(i.type == target):
                 robot.carrying = target
                 i.type = "Empty"
