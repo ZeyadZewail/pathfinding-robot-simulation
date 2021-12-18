@@ -27,6 +27,7 @@ class Cell():
         self.boxTargetImg = ImageTk.PhotoImage(Image.open("box_target.jpg").resize((size-2,size-2)))
         self.triangleTargetImg = ImageTk.PhotoImage(Image.open("triangle_target.jpg").resize((size-2,size-2)))
         self.BoxDeliveredImg = ImageTk.PhotoImage(Image.open("box-delivered.jpg").resize((size-2,size-2)))
+        self.TriangleDeliveredImg = ImageTk.PhotoImage(Image.open("Triangle-Delivered.jpg").resize((size-2,size-2)))
 
     def draw(self):
         """ order to the cell to draw its representation on the canvas """
@@ -68,6 +69,9 @@ class Cell():
             if self.type == "BoxDelivered":
                 self.BoxDeliveredImg = ImageTk.PhotoImage(Image.open("box-delivered.jpg").rotate(self.rotation).resize((self.size-2,self.size-2)))
                 self.master.create_image((xmin+xmax)/2,(ymin+ymax)/2, image=self.BoxDeliveredImg)
+            if self.type == "TriangleDelivered":
+                self.TriangleDeliveredImg = ImageTk.PhotoImage(Image.open("Triangle-Delivered.jpg").rotate(self.rotation).resize((self.size-2,self.size-2)))
+                self.master.create_image((xmin+xmax)/2,(ymin+ymax)/2, image=self.TriangleDeliveredImg)
 
 
 class CellGrid(Canvas):
@@ -254,12 +258,18 @@ class CellGrid(Canvas):
         
         path[-1].draw()
 
+    def print_num_delay(self,x,y,num,delay):
+        self.create_text(x,y,fill="black",font="Times 20 bold",text=num)
+        self.update()
+        self.master.after(delay)
+
     def startDFS(self):
         boxes = []
         triangles = []
         boxTargets = []
         triangleTargets = []
         robot = None
+        animation_delay = 50
 
         for i in self.grid:
             for j in i:
@@ -310,6 +320,7 @@ class CellGrid(Canvas):
         #DFS
         def DFS(target):
             self.clear()
+            
 
             if(type(target) == type(self.grid[0][0])):
                 visited = []
@@ -352,7 +363,8 @@ class CellGrid(Canvas):
                     ymax = ymin + i.size
                     
                     #self.create_image((xmin+xmax)/2,(ymin+ymax)/2, image=self.pointImg)
-                    self.create_text((xmin+xmax)/2,(ymin+ymax)/2,fill="black",font="Times 20 bold",text=counter)
+                    #self.create_text((xmin+xmax)/2,(ymin+ymax)/2,fill="black",font="Times 20 bold",text=counter)
+                    self.print_num_delay((xmin+xmax)/2,(ymin+ymax)/2,counter,animation_delay)
                     counter+=1
                     
 
@@ -405,7 +417,7 @@ class CellGrid(Canvas):
                     ymax = ymin + i.size
                     
                     #self.create_image((xmin+xmax)/2,(ymin+ymax)/2, image=self.pointImg)
-                    self.create_text((xmin+xmax)/2,(ymin+ymax)/2,fill="black",font="Times 20 bold",text=counter)
+                    self.print_num_delay((xmin+xmax)/2,(ymin+ymax)/2,counter,animation_delay)
                     counter+=1
                 return path
 
@@ -419,10 +431,20 @@ class CellGrid(Canvas):
                         self.carry("Box")
                     else:
                      print("Not enough boxes for targets")       
+        elif(len(triangleTargets)>0):
+                if(robot.carrying == "Triangle"):
+                    self.moveAlongPath(DFS(triangleTargets[0]))
+                    self.dropitem(triangleTargets[0])
+                else:
+                    if(len(triangles)>0):
+                        self.moveAlongPath(DFS("Triangle"))
+                        self.carry("Triangle")
+                    else:
+                        print("Not enough Triangles for targets")
         else:
-            print("No targets")
+            print("Not enough Targets")
 
-
+        
 
 
 if __name__ == "__main__" :
