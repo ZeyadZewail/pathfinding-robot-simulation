@@ -250,13 +250,17 @@ class CellGrid(Canvas):
         self.draw()
 
 
-    def moveAlongPath(self,path):
-        robot = self.grid[self.robotRow][self.robotCol]
-        path[-1].carrying = robot.carrying
-        robot.carrying = None
-        self._switch(path[-1],"Robot")
-        
-        path[-1].draw()
+    def moveAlongPath(self,path,delay):
+        for i in path:
+            robot = self.grid[self.robotRow][self.robotCol]
+            temp = robot.carrying
+            robot.carrying = None
+            self._switch(i,"Robot")
+            i.carrying = temp
+            i.draw()
+            self.update()
+            self.master.after(delay)
+       
 
     def print_num_delay(self,x,y,num,delay):
         self.create_text(x,y,fill="black",font="Times 20 bold",text=num)
@@ -270,53 +274,61 @@ class CellGrid(Canvas):
         triangleTargets = []
         robot = None
         animation_delay = 50
-
-        for i in self.grid:
-            for j in i:
-                if(j.type == "Box"):
-                    boxes.append(j)
-                if(j.type == "BoxTarget"):
-                    boxTargets.append(j)
-                if(j.type == "Triangle"):
-                    triangles.append(j)
-                if(j.type == "TriangleTarget"):
-                    triangleTargets.append(j)
-                if(j.type == "Robot"):
-                    robot = j
-
-        if(robot != None):
-            print("Robot at ("+str(robot.abs)+","+str(robot.ord)+")")
-        else:
-            print("Robot not found")
-
-        if(len(boxes)>0):
-            for i in boxes:
-                print("Box at ("+str(i.abs)+","+str(i.ord)+") Orientation: "+str(i.rotation)+"°")
-        else:
-            print("No boxes found.")
-
-        if(len(boxTargets)>0):
-            for i in boxTargets:
-                print("BoxTarget at ("+str(i.abs)+","+str(i.ord)+") Orientation: "+str(i.rotation)+"°")
-        else:
-            print("No box Targets found.")
-
-        if(len(triangles)>0):
-            for i in triangles:
-                print("triangle at ("+str(i.abs)+","+str(i.ord)+") Orientation: "+str(i.rotation)+"°")
-        else:
-            print("No triangles found.")
         
-        if(len(triangleTargets)>0):
-            for i in triangleTargets:
-                print("triangle Target at ("+str(i.abs)+","+str(i.ord)+") Orientation: "+str(i.rotation)+"°")
-        else:
-            print("No triangle Target found.")
+        def gridRead():
+            nonlocal robot
+            nonlocal boxes
+            nonlocal triangles
+            nonlocal boxTargets
+            nonlocal triangleTargets
+            boxes = []
+            triangles = []
+            boxTargets = []
+            triangleTargets = []
+            for i in self.grid:
+                for j in i:
+                    if(j.type == "Box"):
+                        boxes.append(j)
+                    if(j.type == "BoxTarget"):
+                        boxTargets.append(j)
+                    if(j.type == "Triangle"):
+                        triangles.append(j)
+                    if(j.type == "TriangleTarget"):
+                        triangleTargets.append(j)
+                    if(j.type == "Robot"):
+                        robot = j
+
+            if(robot != None):
+                print("Robot at ("+str(robot.abs)+","+str(robot.ord)+")")
+            else:
+                print("Robot not found")
+
+            if(len(boxes)>0):
+                for i in boxes:
+                    print("Box at ("+str(i.abs)+","+str(i.ord)+") Orientation: "+str(i.rotation)+"°")
+            else:
+                print("No boxes found.")
+
+            if(len(boxTargets)>0):
+                for i in boxTargets:
+                    print("BoxTarget at ("+str(i.abs)+","+str(i.ord)+") Orientation: "+str(i.rotation)+"°")
+            else:
+                print("No box Targets found.")
+
+            if(len(triangles)>0):
+                for i in triangles:
+                    print("triangle at ("+str(i.abs)+","+str(i.ord)+") Orientation: "+str(i.rotation)+"°")
+            else:
+                print("No triangles found.")
+            
+            if(len(triangleTargets)>0):
+                for i in triangleTargets:
+                    print("triangle Target at ("+str(i.abs)+","+str(i.ord)+") Orientation: "+str(i.rotation)+"°")
+            else:
+                print("No triangle Target found.")
 
         #self.grid[y][x] -> [ord][abs]
-        for i in self.find_neighbours(robot):
-            print(i.type)
-
+        
         #DFS
         def DFS(target):
             self.clear()
@@ -382,8 +394,8 @@ class CellGrid(Canvas):
                         for i in self.find_neighbours(next):
                             if(i.type == target):
                                 reached = True
+                        path.append(next)
                         if(reached):
-                            path.append(next)
                             break
                         temp = next
                         
@@ -421,28 +433,32 @@ class CellGrid(Canvas):
                     counter+=1
                 return path
 
-        if(len(boxTargets)>0):
+        gridRead()
+        while(len(boxTargets)>0):
                 if(robot.carrying == "Box"):
-                    self.moveAlongPath(DFS(boxTargets[0]))
+                    self.moveAlongPath(DFS("BoxTarget"),50)
                     self.dropitem(boxTargets[0])
                 else:
                     if(len(boxes)>0):
-                        self.moveAlongPath(DFS("Box"))
+                        self.moveAlongPath(DFS("Box"),50)
                         self.carry("Box")
                     else:
-                     print("Not enough boxes for targets")       
-        elif(len(triangleTargets)>0):
+                     print("Not enough boxes for targets")
+                     break       
+                gridRead()
+
+        while(len(triangleTargets)>0):
                 if(robot.carrying == "Triangle"):
-                    self.moveAlongPath(DFS(triangleTargets[0]))
+                    self.moveAlongPath(DFS("TriangleTarget"),50)
                     self.dropitem(triangleTargets[0])
                 else:
                     if(len(triangles)>0):
-                        self.moveAlongPath(DFS("Triangle"))
+                        self.moveAlongPath(DFS("Triangle"),50)
                         self.carry("Triangle")
                     else:
                         print("Not enough Triangles for targets")
-        else:
-            print("Not enough Targets")
+                        break
+                gridRead()
 
         
 
