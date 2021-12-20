@@ -108,8 +108,10 @@ class CellGrid(Canvas):
         b8.pack(side=TOP,fill=BOTH)
         b11 = Button(p1, text="Start DFS", fg="red",command=(lambda: self.startDFS()))
         b11.pack(side=TOP,fill=BOTH)
-        b12 = Button(p1, text="Clear Paths", fg="red",command=(lambda: self.clear()))
-        b12.pack(side=TOP,fill=BOTH)
+        #b12 = Button(p1, text="Clear Paths", fg="red",command=(lambda: self.clear()))
+        #b12.pack(side=TOP,fill=BOTH)
+        b13 = Button(p1, text="Reset", fg="red",command=(lambda: self.reset()))
+        b13.pack(side=TOP,fill=BOTH)
 
         for row in range(rowNumber):
             line = []
@@ -128,6 +130,14 @@ class CellGrid(Canvas):
         #bind release button action - clear the memory of midified cells.
         self.bind("<ButtonRelease-1>", lambda event: self.switched.clear())
 
+        self.draw()
+
+    def reset(self):
+        for i in self.grid:
+            for j in i:
+                j.type = "Empty"
+                j.carrying = None
+                j.rotation = 0
         self.draw()
 
     def _switch(self,cell,type):
@@ -251,6 +261,13 @@ class CellGrid(Canvas):
 
 
     def moveAlongPath(self,path,delay):
+        #shortestPath = []
+        #end = path[-1]
+        #min = 9999
+        #for i in reversed(path[0:-2]):
+         #   for j in path[0:-2]:
+          #      distance = 
+
         for i in path:
             robot = self.grid[self.robotRow][self.robotCol]
             temp = robot.carrying
@@ -431,16 +448,25 @@ class CellGrid(Canvas):
                     #self.create_image((xmin+xmax)/2,(ymin+ymax)/2, image=self.pointImg)
                     self.print_num_delay((xmin+xmax)/2,(ymin+ymax)/2,counter,animation_delay)
                     counter+=1
-                return path
+                return path,fail
 
         gridRead()
+        
         while(len(boxTargets)>0):
                 if(robot.carrying == "Box"):
-                    self.moveAlongPath(DFS("BoxTarget"),50)
+                    path,failed = DFS("BoxTarget")
+                    
+                    if(failed):
+                        break
+                    
+                    self.moveAlongPath(path,50)
                     self.dropitem(boxTargets[0])
                 else:
                     if(len(boxes)>0):
-                        self.moveAlongPath(DFS("Box"),50)
+                        path,failed = DFS("Box")
+                        if(failed):
+                            break
+                        self.moveAlongPath(path,50)
                         self.carry("Box")
                     else:
                      print("Not enough boxes for targets")
@@ -449,11 +475,17 @@ class CellGrid(Canvas):
 
         while(len(triangleTargets)>0):
                 if(robot.carrying == "Triangle"):
-                    self.moveAlongPath(DFS("TriangleTarget"),50)
+                    path,failed = DFS("TriangleTarget")
+                    if(failed):
+                        break
+                    self.moveAlongPath(path,50)
                     self.dropitem(triangleTargets[0])
                 else:
                     if(len(triangles)>0):
-                        self.moveAlongPath(DFS("Triangle"),50)
+                        path,failed = DFS("Triangle")
+                        if(failed):
+                            break
+                        self.moveAlongPath(path,50)
                         self.carry("Triangle")
                     else:
                         print("Not enough Triangles for targets")
