@@ -267,17 +267,20 @@ class CellGrid(Canvas):
         #for i in reversed(path[0:-2]):
          #   for j in path[0:-2]:
           #      distance = 
-
+        prev = None
         for i in path:
-            robot = self.grid[self.robotRow][self.robotCol]
-            temp = robot.carrying
-            robot.carrying = None
-            self._switch(i,"Robot")
-            i.carrying = temp
-            i.draw()
-            self.update()
-            self.master.after(delay)
-       
+            if(i != prev):
+                robot = self.grid[self.robotRow][self.robotCol]
+                temp = robot.carrying
+                robot.carrying = None
+                self._switch(i,"Robot")
+                i.carrying = temp
+                i.draw()
+                self.update()
+                self.master.after(delay)
+            prev = i
+                
+        
 
     def print_num_delay(self,x,y,num,delay):
         self.create_text(x,y,fill="black",font="Times 20 bold",text=num)
@@ -427,6 +430,7 @@ class CellGrid(Canvas):
                         if(next != robot):
                             if(temp == next):
                                 next = visited[visited.index(temp)-1]
+                                path.append(next)
                         else:
                             fail = True
                             break  
@@ -472,6 +476,7 @@ class CellGrid(Canvas):
                      print("Not enough boxes for targets")
                      break       
                 gridRead()
+                
 
         while(len(triangleTargets)>0):
                 if(robot.carrying == "Triangle"):
@@ -492,8 +497,66 @@ class CellGrid(Canvas):
                         break
                 gridRead()
 
-        
+        def startAstar(self):
 
+            boxes = []
+            triangles = []
+            boxTargets = []
+            triangleTargets = []
+            robot = None
+            animation_delay = 50
+            
+            def gridRead():
+                nonlocal robot
+                nonlocal boxes
+                nonlocal triangles
+                nonlocal boxTargets
+                nonlocal triangleTargets
+                boxes = []
+                triangles = []
+                boxTargets = []
+                triangleTargets = []
+                for i in self.grid:
+                    for j in i:
+                        if(j.type == "Box"):
+                            boxes.append(j)
+                        if(j.type == "BoxTarget"):
+                            boxTargets.append(j)
+                        if(j.type == "Triangle"):
+                            triangles.append(j)
+                        if(j.type == "TriangleTarget"):
+                            triangleTargets.append(j)
+                        if(j.type == "Robot"):
+                            robot = j
+
+                if(robot != None):
+                    print("Robot at ("+str(robot.abs)+","+str(robot.ord)+")")
+                else:
+                    print("Robot not found")
+
+                if(len(boxes)>0):
+                    for i in boxes:
+                        print("Box at ("+str(i.abs)+","+str(i.ord)+") Orientation: "+str(i.rotation)+"°")
+                else:
+                    print("No boxes found.")
+
+                if(len(boxTargets)>0):
+                    for i in boxTargets:
+                        print("BoxTarget at ("+str(i.abs)+","+str(i.ord)+") Orientation: "+str(i.rotation)+"°")
+                else:
+                    print("No box Targets found.")
+
+                if(len(triangles)>0):
+                    for i in triangles:
+                        print("triangle at ("+str(i.abs)+","+str(i.ord)+") Orientation: "+str(i.rotation)+"°")
+                else:
+                    print("No triangles found.")
+                
+                if(len(triangleTargets)>0):
+                    for i in triangleTargets:
+                        print("triangle Target at ("+str(i.abs)+","+str(i.ord)+") Orientation: "+str(i.rotation)+"°")
+                else:
+                    print("No triangle Target found.")
 
 if __name__ == "__main__" :
     app = Tk()
