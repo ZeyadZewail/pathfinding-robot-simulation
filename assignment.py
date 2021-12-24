@@ -242,19 +242,23 @@ class CellGrid(Canvas):
     def dropitem(self,target):
         robot = self.grid[self.robotRow][self.robotCol]
         dropType = None
-        if(robot.carrying == "Box"):
-            dropType = "BoxDelivered"
-        if(robot.carrying == "Triangle"):
-            dropType = "TriangleDelivered"
-    
-        if(robot.carrying != None):
-            target.type = dropType
-            print("Dropped "+ robot.carrying)
-            robot.carrying = None
-            target.draw()
-            robot.draw()
+        if(target in self.find_neighbours(robot)):
+            if(robot.carrying == "Box"):
+                dropType = "BoxDelivered"
+            if(robot.carrying == "Triangle"):
+                dropType = "TriangleDelivered"
+        
+            if(robot.carrying != None):
+                target.type = dropType
+                print("Dropped "+ robot.carrying)
+                robot.carrying = None
+                target.draw()
+                robot.draw()
+                return True
+            else:
+                return False
         else:
-            print("Not carrying anything")
+            return False
 
     def clear(self):
         self.draw()
@@ -464,7 +468,9 @@ class CellGrid(Canvas):
                         break
                     
                     self.moveAlongPath(path,50)
-                    self.dropitem(boxTargets[0])
+                    failed = self.dropitem(boxTargets[0])
+                    if(not failed):
+                        break
                 else:
                     if(len(boxes)>0):
                         path,failed = DFS("Box")
