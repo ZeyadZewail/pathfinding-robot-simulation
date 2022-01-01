@@ -1,5 +1,5 @@
 # Pathfinding robot simulation
-![Animation](https://user-images.githubusercontent.com/61602615/146838176-15cb24eb-f8ac-4705-8558-8844cae3ff50.gif)
+![Animation](https://user-images.githubusercontent.com/61602615/147860144-5bb447b2-7648-4996-86c4-15f8dfe722a5.gif)
 ## How to Run
 Run the assignment.py
 
