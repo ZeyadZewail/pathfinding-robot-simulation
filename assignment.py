@@ -18,6 +18,7 @@ class Cell():
         self.type = "Empty"
         self.carrying = None
         self.score = -1
+        self.prev = "Empty"
         self.NextTo = []
         self.rotation = 0
         self.robotImg = ImageTk.PhotoImage(Image.open("robot-1.jpg").resize((size-2,size-2)))
@@ -149,10 +150,11 @@ class CellGrid(Canvas):
                 self.robotRow = cell.ord
                 self.robotCol = cell.abs 
             else:
-                self.grid[self.robotRow][self.robotCol].type = "Empty"
+                self.grid[self.robotRow][self.robotCol].type = self.grid[self.robotRow][self.robotCol].prev
                 self.grid[self.robotRow][self.robotCol].draw()
                 self.robotRow = cell.ord
                 self.robotCol = cell.abs 
+            cell.prev = cell.type
             cell.type = "Robot"
             
             
@@ -654,6 +656,8 @@ class CellGrid(Canvas):
                     self.moveAlongPath(findPath(maxOwner),50)
                     self.dropitem(maxOwner)
             gridRead()
+            if(len(boxTargets)>len(boxes) and robot.carrying == None):
+                break
 
 
                 
