@@ -17,6 +17,7 @@ class Cell():
         self.fill= False
         self.type = "Empty"
         self.carrying = None
+        self.score = -1
         self.NextTo = []
         self.rotation = 0
         self.robotImg = ImageTk.PhotoImage(Image.open("robot-1.jpg").resize((size-2,size-2)))
@@ -108,8 +109,8 @@ class CellGrid(Canvas):
         b8.pack(side=TOP,fill=BOTH)
         b11 = Button(p1, text="Start DFS", fg="red",command=(lambda: self.startDFS()))
         b11.pack(side=TOP,fill=BOTH)
-        #b12 = Button(p1, text="Clear Paths", fg="red",command=(lambda: self.clear()))
-        #b12.pack(side=TOP,fill=BOTH)
+        b12 = Button(p1, text="Start A*", fg="red",command=(lambda: self.startAstar()))
+        b12.pack(side=TOP,fill=BOTH)
         b13 = Button(p1, text="Reset", fg="red",command=(lambda: self.reset()))
         b13.pack(side=TOP,fill=BOTH)
 
@@ -503,66 +504,159 @@ class CellGrid(Canvas):
                         break
                 gridRead()
 
-        def startAstar(self):
+    def startAstar(self):
 
+        boxes = []
+        triangles = []
+        boxTargets = []
+        triangleTargets = []
+        robot = None
+        animation_delay = 5
+        
+        def gridRead():
+            nonlocal robot
+            nonlocal boxes
+            nonlocal triangles
+            nonlocal boxTargets
+            nonlocal triangleTargets
             boxes = []
             triangles = []
             boxTargets = []
             triangleTargets = []
-            robot = None
-            animation_delay = 50
+            for i in self.grid:
+                for j in i:
+                    j.score = -1
+                    if(j.type == "Box"):
+                        boxes.append(j)
+                    if(j.type == "BoxTarget"):
+                        boxTargets.append(j)
+                    if(j.type == "Triangle"):
+                        triangles.append(j)
+                    if(j.type == "TriangleTarget"):
+                        triangleTargets.append(j)
+                    if(j.type == "Robot"):
+                        robot = j
+
+            if(robot != None):
+                print("Robot at ("+str(robot.abs)+","+str(robot.ord)+")")
+            else:
+                print("Robot not found")
+
+            if(len(boxes)>0):
+                for i in boxes:
+                    print("Box at ("+str(i.abs)+","+str(i.ord)+") Orientation: "+str(i.rotation)+"°")
+            else:
+                print("No boxes found.")
+
+            if(len(boxTargets)>0):
+                for i in boxTargets:
+                    print("BoxTarget at ("+str(i.abs)+","+str(i.ord)+") Orientation: "+str(i.rotation)+"°")
+            else:
+                print("No box Targets found.")
+
+            if(len(triangles)>0):
+                for i in triangles:
+                    print("triangle at ("+str(i.abs)+","+str(i.ord)+") Orientation: "+str(i.rotation)+"°")
+            else:
+                print("No triangles found.")
             
-            def gridRead():
-                nonlocal robot
-                nonlocal boxes
-                nonlocal triangles
-                nonlocal boxTargets
-                nonlocal triangleTargets
-                boxes = []
-                triangles = []
-                boxTargets = []
-                triangleTargets = []
-                for i in self.grid:
-                    for j in i:
-                        if(j.type == "Box"):
-                            boxes.append(j)
-                        if(j.type == "BoxTarget"):
-                            boxTargets.append(j)
-                        if(j.type == "Triangle"):
-                            triangles.append(j)
-                        if(j.type == "TriangleTarget"):
-                            triangleTargets.append(j)
-                        if(j.type == "Robot"):
-                            robot = j
+            if(len(triangleTargets)>0):
+                for i in triangleTargets:
+                    print("triangle Target at ("+str(i.abs)+","+str(i.ord)+") Orientation: "+str(i.rotation)+"°")
+            else:
+                print("No triangle Target found.")
 
-                if(robot != None):
-                    print("Robot at ("+str(robot.abs)+","+str(robot.ord)+")")
-                else:
-                    print("Robot not found")
+        def calculateHeuristic():
+            gridRead()
+            self.clear()
+            gDone=[]
+            queue = []
+            robot.score = 0
+            queue.append(robot)
+            gDone.append(robot)
+            for i in self.find_neighbours(robot):
+                if(i.type != "Obstacle"):
+                    i.score = 1
+                    queue.append(i)
+                    gDone.append(i)
+                    xmin = i.abs * i.size
+                    xmax = xmin + i.size
+                    ymin = i.ord * i.size
+                    ymax = ymin + i.size
+                    self.print_num_delay((xmin+xmax)/2,(ymin+ymax)/2,i.score,animation_delay)
 
-                if(len(boxes)>0):
-                    for i in boxes:
-                        print("Box at ("+str(i.abs)+","+str(i.ord)+") Orientation: "+str(i.rotation)+"°")
-                else:
-                    print("No boxes found.")
+            while(len(queue)>0):
+                current = queue.pop(0)
+                for i in self.find_neighbours(current):
+                    if(i.type in ["Empty","BoxTarget","TriangleTarget"] and i.score == -1):
+                        i.score = current.score+1
+                        queue.append(i)
+                        gDone.append(i)
+                        xmin = i.abs * i.size
+                        xmax = xmin + i.size
+                        ymin = i.ord * i.size
+                        ymax = ymin + i.size
+                        self.print_num_delay((xmin+xmax)/2,(ymin+ymax)/2,i.score,animation_delay)
+                    if(i.type in ["Box","Triangle"] and i.score == -1):
+                        i.score = current.score+1
+                        gDone.append(i)
+                        xmin = i.abs * i.size
+                        xmax = xmin + i.size
+                        ymin = i.ord * i.size
+                        ymax = ymin + i.size
+                        self.print_num_delay((xmin+xmax)/2,(ymin+ymax)/2,i.score,animation_delay)
+            self.clear()
+            return gDone
 
-                if(len(boxTargets)>0):
-                    for i in boxTargets:
-                        print("BoxTarget at ("+str(i.abs)+","+str(i.ord)+") Orientation: "+str(i.rotation)+"°")
-                else:
-                    print("No box Targets found.")
+        def findPath(target):
+            path = []
+            if(target.score != -1):
+                next = target
+                while(next != robot):
+                    min = 999
+                    minOwner = None
+                    for i in self.find_neighbours(next):
+                        if(i == robot):
+                            next = robot
+                            break
+                        elif(i.score < min and i.score != -1):
+                            min = i.score
+                            minOwner = i
+                            next = minOwner
+                    if(minOwner != None and next != robot):
+                        path.append(minOwner)
+            return reversed(path)
+        
+        gridRead()
+        while(len(boxTargets)> 0 or len(triangleTargets) > 0):
+            if(robot.carrying == None):
+                candidates = calculateHeuristic()
+                min = 999
+                minOwner = None
+                for i in candidates:
+                    if(i.type == "Box"):
+                        if(i.score < min):
+                            min = i.score
+                            minOwner = i
+                if(minOwner != None):
+                    self.moveAlongPath(findPath(minOwner),50)
+                    self.carry("Box")
 
-                if(len(triangles)>0):
-                    for i in triangles:
-                        print("triangle at ("+str(i.abs)+","+str(i.ord)+") Orientation: "+str(i.rotation)+"°")
-                else:
-                    print("No triangles found.")
+            if(robot.carrying == "Box"):
+                candidates = calculateHeuristic()
+                max = -1
+                maxOwner = None
+                for i in boxTargets:
+                    if(i.score>max):
+                        max = i.score
+                        maxOwner = i
+                if(maxOwner != None):
+                    self.moveAlongPath(findPath(maxOwner),50)
+                    self.dropitem(maxOwner)
+            gridRead()
+
+
                 
-                if(len(triangleTargets)>0):
-                    for i in triangleTargets:
-                        print("triangle Target at ("+str(i.abs)+","+str(i.ord)+") Orientation: "+str(i.rotation)+"°")
-                else:
-                    print("No triangle Target found.")
 
 if __name__ == "__main__" :
     app = Tk()
