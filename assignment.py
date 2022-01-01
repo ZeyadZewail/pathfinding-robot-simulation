@@ -530,11 +530,11 @@ class CellGrid(Canvas):
                     j.score = -1
                     if(j.type == "Box"):
                         boxes.append(j)
-                    if(j.type == "BoxTarget"):
+                    if(j.type == "BoxTarget" or j.prev == "BoxTarget"):
                         boxTargets.append(j)
                     if(j.type == "Triangle"):
                         triangles.append(j)
-                    if(j.type == "TriangleTarget"):
+                    if(j.type == "TriangleTarget" or j.prev == "TriangleTarget"):
                         triangleTargets.append(j)
                     if(j.type == "Robot"):
                         robot = j
@@ -656,7 +656,7 @@ class CellGrid(Canvas):
                     self.moveAlongPath(findPath(maxOwner),50)
                     self.dropitem(maxOwner)
             gridRead()
-            if(len(boxTargets)>len(boxes) and robot.carrying == None):
+            if(len(boxes)==0 and robot.carrying == None):
                 break
 
 
