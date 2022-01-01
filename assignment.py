@@ -23,13 +23,9 @@ class Cell():
         self.rotation = 0
         self.robotImg = ImageTk.PhotoImage(Image.open("robot-1.jpg").resize((size-2,size-2)))
         self.robotBImg = ImageTk.PhotoImage(Image.open("robot-box.jpg").resize((size-2,size-2)))
-        self.robotTImg = ImageTk.PhotoImage(Image.open("robot-triangle.jpg").resize((size-2,size-2)))
-        self.triangleImg = ImageTk.PhotoImage(Image.open("triangle.jpg").resize((size-2,size-2)))
         self.boxImg = ImageTk.PhotoImage(Image.open("box.jpg").resize((size-2,size-2)))
         self.boxTargetImg = ImageTk.PhotoImage(Image.open("box_target.jpg").resize((size-2,size-2)))
-        self.triangleTargetImg = ImageTk.PhotoImage(Image.open("triangle_target.jpg").resize((size-2,size-2)))
         self.BoxDeliveredImg = ImageTk.PhotoImage(Image.open("box-delivered.jpg").resize((size-2,size-2)))
-        self.TriangleDeliveredImg = ImageTk.PhotoImage(Image.open("Triangle-Delivered.jpg").resize((size-2,size-2)))
 
     def draw(self):
         """ order to the cell to draw its representation on the canvas """
@@ -60,20 +56,9 @@ class Cell():
                 self.master.create_image((xmin+xmax)/2,(ymin+ymax)/2, image=self.robotImg)
             if self.type == "Robot" and self.carrying == "Box":
                 self.master.create_image((xmin+xmax)/2,(ymin+ymax)/2, image=self.robotBImg)
-            if self.type == "Robot" and self.carrying == "Triangle":
-                self.master.create_image((xmin+xmax)/2,(ymin+ymax)/2, image=self.robotTImg)
-            if self.type == "Triangle":
-                self.triangleImg = ImageTk.PhotoImage(Image.open("triangle.jpg").rotate(self.rotation).resize((self.size-2,self.size-2)))
-                self.master.create_image((xmin+xmax)/2,(ymin+ymax)/2, image=self.triangleImg)
-            if self.type == "TriangleTarget":
-                self.triangleTargetImg = ImageTk.PhotoImage(Image.open("triangle_target.jpg").rotate(self.rotation).resize((self.size-2,self.size-2)))
-                self.master.create_image((xmin+xmax)/2,(ymin+ymax)/2, image=self.triangleTargetImg)
             if self.type == "BoxDelivered":
                 self.BoxDeliveredImg = ImageTk.PhotoImage(Image.open("box-delivered.jpg").rotate(self.rotation).resize((self.size-2,self.size-2)))
                 self.master.create_image((xmin+xmax)/2,(ymin+ymax)/2, image=self.BoxDeliveredImg)
-            if self.type == "TriangleDelivered":
-                self.TriangleDeliveredImg = ImageTk.PhotoImage(Image.open("Triangle-Delivered.jpg").rotate(self.rotation).resize((self.size-2,self.size-2)))
-                self.master.create_image((xmin+xmax)/2,(ymin+ymax)/2, image=self.TriangleDeliveredImg)
 
 
 class CellGrid(Canvas):
@@ -96,10 +81,6 @@ class CellGrid(Canvas):
         b2.pack(side=TOP,fill=BOTH)
         b9 = Button(p1, text="BoxTarget", fg="blue",command=(lambda: self.changeType("BoxTarget")))
         b9.pack(side=TOP,fill=BOTH)
-        b3 = Button(p1, text="Triangle", fg="blue",command=(lambda: self.changeType("Triangle")))
-        b3.pack(side=TOP,fill=BOTH)
-        b10 = Button(p1, text="TriangleTarget", fg="blue",command=(lambda: self.changeType("TriangleTarget")))
-        b10.pack(side=TOP,fill=BOTH)
         b5 = Button(p1, text="0°", fg="black",command=(lambda: self.changeRotation(0)))
         b5.pack(side=TOP,fill=BOTH)
         b6 = Button(p1, text="90°", fg="black",command=(lambda: self.changeRotation(-90)))
@@ -248,8 +229,6 @@ class CellGrid(Canvas):
         if(target in self.find_neighbours(robot)):
             if(robot.carrying == "Box"):
                 dropType = "BoxDelivered"
-            if(robot.carrying == "Triangle"):
-                dropType = "TriangleDelivered"
         
             if(robot.carrying != None):
                 target.type = dropType
@@ -296,32 +275,22 @@ class CellGrid(Canvas):
 
     def startDFS(self):
         boxes = []
-        triangles = []
         boxTargets = []
-        triangleTargets = []
         robot = None
         animation_delay = 50
         
         def gridRead():
             nonlocal robot
             nonlocal boxes
-            nonlocal triangles
             nonlocal boxTargets
-            nonlocal triangleTargets
             boxes = []
-            triangles = []
             boxTargets = []
-            triangleTargets = []
             for i in self.grid:
                 for j in i:
                     if(j.type == "Box"):
                         boxes.append(j)
                     if(j.type == "BoxTarget"):
                         boxTargets.append(j)
-                    if(j.type == "Triangle"):
-                        triangles.append(j)
-                    if(j.type == "TriangleTarget"):
-                        triangleTargets.append(j)
                     if(j.type == "Robot"):
                         robot = j
 
@@ -342,17 +311,7 @@ class CellGrid(Canvas):
             else:
                 print("No box Targets found.")
 
-            if(len(triangles)>0):
-                for i in triangles:
-                    print("triangle at ("+str(i.abs)+","+str(i.ord)+") Orientation: "+str(i.rotation)+"°")
-            else:
-                print("No triangles found.")
             
-            if(len(triangleTargets)>0):
-                for i in triangleTargets:
-                    print("triangle Target at ("+str(i.abs)+","+str(i.ord)+") Orientation: "+str(i.rotation)+"°")
-            else:
-                print("No triangle Target found.")
 
         #self.grid[y][x] -> [ord][abs]
         
@@ -487,44 +446,22 @@ class CellGrid(Canvas):
                 gridRead()
                 
 
-        while(len(triangleTargets)>0):
-                if(robot.carrying == "Triangle"):
-                    path,failed = DFS("TriangleTarget")
-                    if(failed):
-                        break
-                    self.moveAlongPath(path,50)
-                    self.dropitem(triangleTargets[0])
-                else:
-                    if(len(triangles)>0):
-                        path,failed = DFS("Triangle")
-                        if(failed):
-                            break
-                        self.moveAlongPath(path,50)
-                        self.carry("Triangle")
-                    else:
-                        print("Not enough Triangles for targets")
-                        break
-                gridRead()
+        
+                
 
     def startAstar(self):
 
         boxes = []
-        triangles = []
         boxTargets = []
-        triangleTargets = []
         robot = None
         animation_delay = 5
         
         def gridRead():
             nonlocal robot
             nonlocal boxes
-            nonlocal triangles
             nonlocal boxTargets
-            nonlocal triangleTargets
             boxes = []
-            triangles = []
             boxTargets = []
-            triangleTargets = []
             for i in self.grid:
                 for j in i:
                     j.score = -1
@@ -532,10 +469,6 @@ class CellGrid(Canvas):
                         boxes.append(j)
                     if(j.type == "BoxTarget" or j.prev == "BoxTarget"):
                         boxTargets.append(j)
-                    if(j.type == "Triangle"):
-                        triangles.append(j)
-                    if(j.type == "TriangleTarget" or j.prev == "TriangleTarget"):
-                        triangleTargets.append(j)
                     if(j.type == "Robot"):
                         robot = j
 
@@ -556,17 +489,9 @@ class CellGrid(Canvas):
             else:
                 print("No box Targets found.")
 
-            if(len(triangles)>0):
-                for i in triangles:
-                    print("triangle at ("+str(i.abs)+","+str(i.ord)+") Orientation: "+str(i.rotation)+"°")
-            else:
-                print("No triangles found.")
             
-            if(len(triangleTargets)>0):
-                for i in triangleTargets:
-                    print("triangle Target at ("+str(i.abs)+","+str(i.ord)+") Orientation: "+str(i.rotation)+"°")
-            else:
-                print("No triangle Target found.")
+            
+            
 
         def calculateHeuristic():
             gridRead()
@@ -590,7 +515,7 @@ class CellGrid(Canvas):
             while(len(queue)>0):
                 current = queue.pop(0)
                 for i in self.find_neighbours(current):
-                    if(i.type in ["Empty","BoxTarget","TriangleTarget"] and i.score == -1):
+                    if(i.type in ["Empty","BoxTarget"] and i.score == -1):
                         i.score = current.score+1
                         queue.append(i)
                         gDone.append(i)
@@ -599,7 +524,7 @@ class CellGrid(Canvas):
                         ymin = i.ord * i.size
                         ymax = ymin + i.size
                         self.print_num_delay((xmin+xmax)/2,(ymin+ymax)/2,i.score,animation_delay)
-                    if(i.type in ["Box","Triangle"] and i.score == -1):
+                    if(i.type in ["Box"] and i.score == -1):
                         i.score = current.score+1
                         gDone.append(i)
                         xmin = i.abs * i.size
@@ -630,7 +555,7 @@ class CellGrid(Canvas):
             return reversed(path)
         
         gridRead()
-        while(len(boxTargets)> 0 or len(triangleTargets) > 0):
+        while(len(boxTargets)> 0):
             if(robot.carrying == None):
                 candidates = calculateHeuristic()
                 min = 999
