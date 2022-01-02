@@ -134,7 +134,8 @@ class CellGrid(Canvas):
                 self.grid[self.robotRow][self.robotCol].type = self.grid[self.robotRow][self.robotCol].prev
                 self.grid[self.robotRow][self.robotCol].draw()
                 self.robotRow = cell.ord
-                self.robotCol = cell.abs 
+                self.robotCol = cell.abs
+            self.grid[self.robotRow][self.robotCol].prev = "Empty"
             cell.prev = cell.type
             cell.type = "Robot"
             
@@ -232,6 +233,7 @@ class CellGrid(Canvas):
         
             if(robot.carrying != None):
                 target.type = dropType
+                target.prev = "Empty"
                 print("Dropped "+ robot.carrying)
                 robot.carrying = None
                 target.draw()
@@ -245,14 +247,10 @@ class CellGrid(Canvas):
     def clear(self):
         self.draw()
 
+    
 
     def moveAlongPath(self,path,delay):
-        #shortestPath = []
-        #end = path[-1]
-        #min = 9999
-        #for i in reversed(path[0:-2]):
-         #   for j in path[0:-2]:
-          #      distance = 
+        
         prev = None
         for i in path:
             if(i != prev):
