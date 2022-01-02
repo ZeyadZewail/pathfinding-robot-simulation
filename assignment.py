@@ -22,7 +22,7 @@ class Cell():
         self.NextTo = []
         self.rotation = 0
         self.robotImg = ImageTk.PhotoImage(Image.open("robot-1.jpg").resize((size-2,size-2)))
-        self.robotBImg = ImageTk.PhotoImage(Image.open("robot-box.jpg").resize((size-2,size-2)))
+        self.robotBImg = ImageTk.PhotoImage(Image.open("robot-box_.jpg").resize((size-2,size-2)))
         self.boxImg = ImageTk.PhotoImage(Image.open("box.jpg").resize((size-2,size-2)))
         self.boxTargetImg = ImageTk.PhotoImage(Image.open("box_target.jpg").resize((size-2,size-2)))
         self.BoxDeliveredImg = ImageTk.PhotoImage(Image.open("box-delivered.jpg").resize((size-2,size-2)))
