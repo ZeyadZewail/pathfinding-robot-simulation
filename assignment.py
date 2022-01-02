@@ -50,14 +50,14 @@ class Cell():
                 self.boxImg = ImageTk.PhotoImage(Image.open("box.jpg").rotate(self.rotation).resize((self.size-2,self.size-2)))
                 self.master.create_image((xmin+xmax)/2,(ymin+ymax)/2, image=self.boxImg)
             if self.type == "BoxTarget":
-                self.boxImg = ImageTk.PhotoImage(Image.open("box_target.jpg").rotate(self.rotation).resize((self.size-2,self.size-2)))
+                self.boxImg = ImageTk.PhotoImage(Image.open("box_target_.jpg").rotate(self.rotation).resize((self.size-2,self.size-2)))
                 self.master.create_image((xmin+xmax)/2,(ymin+ymax)/2, image=self.boxImg)
             if self.type == "Robot" and self.carrying == None:
                 self.master.create_image((xmin+xmax)/2,(ymin+ymax)/2, image=self.robotImg)
             if self.type == "Robot" and self.carrying == "Box":
                 self.master.create_image((xmin+xmax)/2,(ymin+ymax)/2, image=self.robotBImg)
             if self.type == "BoxDelivered":
-                self.BoxDeliveredImg = ImageTk.PhotoImage(Image.open("box-delivered.jpg").rotate(self.rotation).resize((self.size-2,self.size-2)))
+                self.BoxDeliveredImg = ImageTk.PhotoImage(Image.open("box-delivered_.jpg").rotate(self.rotation).resize((self.size-2,self.size-2)))
                 self.master.create_image((xmin+xmax)/2,(ymin+ymax)/2, image=self.BoxDeliveredImg)
 
 
@@ -144,9 +144,11 @@ class CellGrid(Canvas):
         else:
             if(cell.type == type):
                 cell.type = "Empty"
+                cell.prev = "Empty"
                 cell.rotation = 0
             else:
               cell.type = type
+              cell.prev = "Empty"
               cell.rotation = self.currentRotation
         
     def find_neighbours(self,cell):
