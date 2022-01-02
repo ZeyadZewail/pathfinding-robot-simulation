@@ -2,7 +2,7 @@ from tkinter import *
 from PIL import Image,ImageTk
 import time
 
-#heavily edited source code for basic grid representation
+#Extremely edited source code based on basic grid representation from:
 #https://stackoverflow.com/questions/30023763/how-to-make-an-interactive-2d-grid-in-a-window-in-python
 
 class Cell():
@@ -554,35 +554,51 @@ class CellGrid(Canvas):
                         path.append(minOwner)
             return reversed(path)
         
-        gridRead()
-        while(len(boxTargets)> 0):
-            if(robot.carrying == None):
-                candidates = calculateHeuristic()
-                min = 999
-                minOwner = None
-                for i in candidates:
-                    if(i.type == "Box"):
+        
+        def planner():
+            candidates = calculateHeuristic()
+            boxTargetz = []
+            boxz = []
+            for i in candidates:
+                if(i.type == "BoxTarget"):
+                    boxTargetz.append(i)
+                for j in self.find_neighbours(i):
+                    if(j.type == "Box"):
+                        boxz.append(i)
+            
+            boxTargetsCount = len(boxTargetz)
+            boxCount = len(boxz)
+            if(boxTargetsCount > 0 and (boxCount > 0 or robot.carrying == "Box")):
+                if(robot.carrying == None):
+                    min = 999
+                    minOwner = None
+                    for i in boxz:
                         if(i.score < min):
                             min = i.score
                             minOwner = i
-                if(minOwner != None):
-                    self.moveAlongPath(findPath(minOwner),50)
-                    self.carry("Box")
+                    boxz.remove(minOwner)
+                    if(minOwner != None):
+                        self.moveAlongPath(findPath(minOwner),50)
+                        self._switch(minOwner,"Robot")
+                        self.carry("Box")
+                    planner()
 
-            if(robot.carrying == "Box"):
-                candidates = calculateHeuristic()
-                max = -1
-                maxOwner = None
-                for i in boxTargets:
-                    if(i.score>max):
-                        max = i.score
-                        maxOwner = i
-                if(maxOwner != None):
-                    self.moveAlongPath(findPath(maxOwner),50)
-                    self.dropitem(maxOwner)
-            gridRead()
-            if(len(boxes)==0 and robot.carrying == None):
-                break
+                if(robot.carrying == "Box"):
+                    max = -1
+                    maxOwner = None
+                    for i in boxTargetz:
+                        if(i.score>max):
+                            max = i.score
+                            maxOwner = i
+                    boxTargetz.remove(maxOwner)
+                    if(maxOwner != None):
+                        self.moveAlongPath(findPath(maxOwner),50)
+                        self.dropitem(maxOwner)
+                    planner()
+
+        planner() 
+        
+            
 
 
                 
