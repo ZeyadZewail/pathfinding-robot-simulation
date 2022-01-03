@@ -454,7 +454,7 @@ class CellGrid(Canvas):
         boxes = []
         boxTargets = []
         robot = None
-        animation_delay = 5
+        animation_delay = 2
         
         def gridRead():
             nonlocal robot
@@ -560,7 +560,7 @@ class CellGrid(Canvas):
             boxTargetz = []
             boxz = []
             for i in candidates:
-                if(i.type == "BoxTarget"):
+                if(i.type == "BoxTarget" or i.prev =="BoxTarget"):
                     boxTargetz.append(i)
                 for j in self.find_neighbours(i):
                     if(j.type == "Box"):
@@ -580,6 +580,7 @@ class CellGrid(Canvas):
                     if(minOwner != None):
                         self.moveAlongPath(findPath(minOwner),50)
                         self._switch(minOwner,"Robot")
+                        minOwner.draw()
                         self.carry("Box")
                     planner()
 
