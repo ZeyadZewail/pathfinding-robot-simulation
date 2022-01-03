@@ -11,16 +11,16 @@ class Cell():
     def __init__(self, master, x, y, size):
         """ Constructor of the object called by Cell(...) """
         self.master = master
-        self.abs = x
-        self.ord = y
+        self.abs = x #positional value on x axis
+        self.ord = y #positional value on y axis
         self.size= size
         self.fill= False
-        self.type = "Empty"
-        self.carrying = None
-        self.score = -1
-        self.prev = "Empty"
+        self.type = "Empty" #the cell type
+        self.carrying = None #if the cell is a robot indicates what the robot is carrying
+        self.score = -1 #stores the hueristic score used in A* 
+        self.prev = "Empty" 
         self.NextTo = []
-        self.rotation = 0
+        self.rotation = 0 #stores the rotation angle of the cells
         self.robotImg = ImageTk.PhotoImage(Image.open("robot-1.jpg").resize((size-2,size-2)))
         self.robotBImg = ImageTk.PhotoImage(Image.open("robot-box_.jpg").resize((size-2,size-2)))
         self.boxImg = ImageTk.PhotoImage(Image.open("box.jpg").resize((size-2,size-2)))
@@ -28,7 +28,7 @@ class Cell():
         self.BoxDeliveredImg = ImageTk.PhotoImage(Image.open("box-delivered.jpg").resize((size-2,size-2)))
 
     def draw(self):
-        """ order to the cell to draw its representation on the canvas """
+        """ order the cell to draw its representation on the tkinter canvas """
         if self.master != None :
             
             if self.type == "Obstacle":
@@ -66,11 +66,11 @@ class CellGrid(Canvas):
         Canvas.__init__(self, master, width = cellSize * columnNumber , height = cellSize * rowNumber, *args, **kwargs)
         
         self.cellSize = cellSize
-        self.currentType = "Obstacle"
-        self.grid = []
-        self.robotRow = -1
-        self.robotCol = -1
-        self.currentRotation = 0
+        self.currentType = "Obstacle" #currently chosen cell type setting to place based on
+        self.grid = [] #where our grid is stored
+        self.robotRow = -1 #keep track of the robots location
+        self.robotCol = -1  
+        self.currentRotation = 0 #currently chosen rotation setting to place based on
         p1 = PanedWindow()
         p1.pack(side = RIGHT)
         b4 = Button(p1, text="Robot", fg="blue",command=(lambda: self.changeType("Robot")))
@@ -96,9 +96,9 @@ class CellGrid(Canvas):
         b13 = Button(p1, text="Reset", fg="red",command=(lambda: self.reset()))
         b13.pack(side=TOP,fill=BOTH)
 
-        for row in range(rowNumber):
+        for row in range(rowNumber):  #fill our grid represenation with the required cells
             line = []
-            for column in range(columnNumber):
+            for column in range(columnNumber): #according to the required size
                 line.append(Cell(self, column, row, cellSize))
 
             self.grid.append(line)
@@ -115,7 +115,7 @@ class CellGrid(Canvas):
 
         self.draw()
 
-    def reset(self):
+    def reset(self): #reset the grid
         for i in self.grid:
             for j in i:
                 j.type = "Empty"
@@ -151,7 +151,7 @@ class CellGrid(Canvas):
               cell.prev = "Empty"
               cell.rotation = self.currentRotation
         
-    def find_neighbours(self,cell):
+    def find_neighbours(self,cell): #finds the neighbours cells of a cell according to a certain order (anticlockwise)
         nextTo = []
         #right
         if(cell.abs != len(self.grid[0])-1):
@@ -210,7 +210,7 @@ class CellGrid(Canvas):
     def changeRotation(self,rotation):
         self.currentRotation = rotation
 
-    def carry(self,target):
+    def carry(self,target): #takes a type and looks for it in the cells neighbours and picks it up
         robot = self.grid[self.robotRow][self.robotCol]
         found = False
         for i in self.find_neighbours(robot):
@@ -226,7 +226,7 @@ class CellGrid(Canvas):
         if(found == False):
             print("No " +target + " in Sight")
 
-    def dropitem(self,target):
+    def dropitem(self,target): #attempts to drop current item at target
         robot = self.grid[self.robotRow][self.robotCol]
         dropType = None
         if(target in self.find_neighbours(robot)):
@@ -251,7 +251,7 @@ class CellGrid(Canvas):
 
     
 
-    def moveAlongPath(self,path,delay):
+    def moveAlongPath(self,path,delay): #takes a path and moves the robot along it
         
         prev = None
         for i in path:
@@ -446,9 +446,6 @@ class CellGrid(Canvas):
                 gridRead()
                 
 
-        
-                
-
     def startAstar(self):
 
         boxes = []
@@ -493,15 +490,15 @@ class CellGrid(Canvas):
             
             
 
-        def calculateHeuristic():
+        def calculateHeuristic(): #calculates the heuristic scores of reachable destinations
             gridRead()
             self.clear()
             gDone=[]
-            queue = []
+            queue = [] #queue to keep BFS like order
             robot.score = 0
             queue.append(robot)
             gDone.append(robot)
-            for i in self.find_neighbours(robot):
+            for i in self.find_neighbours(robot): #assigning score
                 if(i.type != "Obstacle"):
                     i.score = 1
                     queue.append(i)
@@ -512,7 +509,7 @@ class CellGrid(Canvas):
                     ymax = ymin + i.size
                     self.print_num_delay((xmin+xmax)/2,(ymin+ymax)/2,i.score,animation_delay)
 
-            while(len(queue)>0):
+            while(len(queue)>0): #making sure all reachable boxes get a score
                 current = queue.pop(0)
                 for i in self.find_neighbours(current):
                     if(i.type in ["Empty","BoxTarget"] and i.score == -1):
@@ -535,7 +532,7 @@ class CellGrid(Canvas):
             self.clear()
             return gDone
 
-        def findPath(target):
+        def findPath(target): #finds the shortest path to a target using heuristic score
             path = []
             if(target.score != -1):
                 next = target
@@ -555,7 +552,7 @@ class CellGrid(Canvas):
             return reversed(path)
         
         
-        def planner():
+        def planner(): #planner algorithim
             candidates = calculateHeuristic()
             boxTargetz = []
             boxz = []
@@ -582,7 +579,7 @@ class CellGrid(Canvas):
                         self._switch(minOwner,"Robot")
                         minOwner.draw()
                         self.carry("Box")
-                    planner()
+                    planner() #recursive call to keep it going
 
                 if(robot.carrying == "Box"):
                     max = -1
@@ -595,9 +592,9 @@ class CellGrid(Canvas):
                     if(maxOwner != None):
                         self.moveAlongPath(findPath(maxOwner),50)
                         self.dropitem(maxOwner)
-                    planner()
+                    planner() #recursive call to keep it going
 
-        planner() 
+        planner() #intital call when button is pressed
         
             
 
