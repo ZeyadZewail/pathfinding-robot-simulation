@@ -568,7 +568,7 @@ class CellGrid(Canvas):
             
             boxTargetsCount = len(boxTargetz)
             boxCount = len(boxz)
-            if(boxTargetsCount > 0 and (boxCount > 0 or robot.carrying == "Box")):
+            if(boxTargetsCount > 0 or (boxCount > 0 and robot.carrying == None)):
                 if(robot.carrying == None):
                     min = 999
                     minOwner = None
